@@ -1,0 +1,11 @@
+{
+    "indices": "tra*",
+    "ignore_unavailable": true,
+    "include_global_state": false,
+    "index.lifecycle.name": null,
+    "index.routing.allocation.require.data": null,
+    "metadata": {
+        "taken_by": "AXP Automated schedular",
+        "taken_because": "Daily snapshot"
+    }
+}

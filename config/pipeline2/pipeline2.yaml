@@ -1,0 +1,104 @@
+#Sample   config/pipeline0/pipeline0.yaml
+
+# Create per second summary index for the raw data
+# This task 2002 will run at app startup and also as scheduled
+# at  8 am daily
+- id: 2002
+  name: Create Daily rollup job, result axp-tps-bystage
+  uri: _rollup/job/axp-tps-bystage-{yyyy}.{mm}.{dd}
+  method: put
+  filepath: config/pipeline2/templates/2002.txt
+  cron: "0 0 8 1/1 * ?"
+  runonceafterinmins: 2
+
+- id: 2003
+  name: Start Daily rollup job in 2002
+  uri: _rollup/job/axp-tps-bystage-{yyyy}.{mm}.{dd}/_start
+  method: post
+  cron: "0 5 8 1/1 * ?"
+  runonceafterinmins: 3
+
+#----------------------------------------------------------------------------------------------------------------------
+#  reindex the summarised data in step 2002, so we can create a another rollup job to summarised these data by day
+#  elassticsearch doesn't allow running a rollup job on an index that is created as a result of another rollup job.
+#  to overcome this issue we will reindex the index to a normal index.
+- id: 2004
+  name: Add Once index mapping template for axp-tps-bystage-ri indices
+  uri: _template/axp-tps-bystage-ri
+  method: put
+  filepath: config/pipeline2/templates/2004.txt
+
+- id: 2005
+  name: Create Daily reindex job for axp-tps-bystage-ri-*
+  uri: _reindex?slices=5&refresh&wait_for_completion=false
+  method: post
+  filepath: config/pipeline2/templates/2005.txt
+  cron: "0 1 3 1/1 * ?"
+  deltadays: 1
+
+#----------------------------------------------------------------------------------------------------------------------
+# Create dail rollup/summary job
+# This job to be executed once and job will run forever, job will start after 1.5days of app start
+- id: 2006
+  name: Create Once rollup for axp-day-tps-bystage
+  uri: _rollup/job/axp-day-tps-bystage
+  method: put
+  filepath: config/pipeline2/templates/2006.txt
+  runonceafterinmins: 2000
+
+
+- id: 2007
+  name: Start Once rollup job
+  uri: _rollup/job/axp-day-tps-bystage/_start
+  method: post
+  runonceafterinmins: 2001
+
+#--------------------cleanup--------------------------
+# Stop and delete the per second rollup job
+- id: 2008
+  name: Stop Daily rollup job in 1001 after two days
+  uri: _rollup/job/axp-tps-bystage-{yyyy}.{mm}.{dd}/_stop
+  method: post
+  cron: "0 4 9 1/1 * ?"
+  deltadays: 2
+# delete the per second rollup job
+- id: 2009
+  name: Delete Daily rollup job in 1001 after X days
+  uri: _rollup/job/axp-tps-bystage-{yyyy}.{mm}.{dd}
+  method: delete
+  cron: "0 5 9 1/1 * ?"
+  deltadays: 3
+# Delete per second index after 4 days
+- id: 2010
+  name: Delete axp-tps-bystage index after X days
+  uri: axp-tps-bystage-{yyyy}.{mm}.{dd}
+  method: delete
+  cron: "0 6 9 1/1 * ?"
+  deltadays: 4
+
+- id: 2011
+  name: Delete axp-tps-bystage-ri index after X days
+  uri: axp-tps-bystage-ri-{yyyy}.{mm}.{dd}
+  method: delete
+  cron: "0 7 9 1/1 * ?"
+  deltadays: 5
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

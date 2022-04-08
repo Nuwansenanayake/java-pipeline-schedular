@@ -1,0 +1,9 @@
+{
+  "size":10,
+  "source": {
+    "index": "transactions-d-{yyyy}.{mm}.{dd}"
+  },
+  "dest": {
+    "index": "temp-transactions-d-{yyyy}.{mm}"
+  }
+}

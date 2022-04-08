@@ -1,0 +1,28 @@
+{
+
+  "index_pattern": "transactions-d-{yyyy}.{mm}.{dd}",
+  "rollup_index": "axp-tps-bystage-{yyyy}.{mm}.{dd}",
+  "cron": "0 * * * * ?",
+  "page_size": 1000,
+  "groups": {
+    "date_histogram": {
+      "interval": "1s",
+      "delay": "10s",
+      "time_zone": "UTC",
+      "field": "@timestamp"
+    },
+    "terms": {
+      "fields": [
+        "stage"
+      ]
+    }
+  },
+  "metrics": [
+    {
+      "field": "@timestamp",
+      "metrics": [
+        "value_count"
+      ]
+    }
+  ]
+}

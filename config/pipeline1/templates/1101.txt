@@ -1,0 +1,9 @@
+{
+  "source": {
+    "index": "transactions-d-{yyyy}.{mm}.{dd}",
+    "_source": ["user","tid","stage","amountInEuro","mno_name","application","product_id","orderId","amount","totalAmountCharged","api_v","country","bizao_alias","api","@timestamp","service-time","sp_id","callBack","currency","onBehalfOf","transaction"]
+  },
+  "dest": {
+    "index": "axp-transactions-ri-{yyyy}.{mm}-p{partition}"
+  }
+}

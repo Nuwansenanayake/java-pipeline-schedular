@@ -1,0 +1,190 @@
+#Sample
+# - id: 1001
+#  name: Create Daily rollup job
+#  uri: _rollup/job/nuwan-tps-rollup-job-2
+#  method: put
+#  filepath: config/templates/1001.txt
+#  cron: "0 0 2 1/1 * ?"
+#  enabled: true
+#  deltadays: 2
+#- runonceafterinhours - run once after start and value to be pass in hours
+
+#These properties are optional
+#  filepath:
+#  cron:
+#  enabled:
+#  deltadays:
+
+# if cron property is available task will be scheduled to run else will run at startup
+# if filepath: property available rest body will be loaded from the file
+# deltadays will set the current time with the given delta
+#
+# make sure timezone are set to running server wherever used
+
+#---------------------- tps summarise -------------
+# Create Rollup job to summarise records per seconds, create a new job daily
+#   - Create (1001A) - create new job every day at 2am
+#   - Start (1002A) - start it at 2.2am
+#   - Stop (1002A) - stop 2 days after at 2.1am am
+#   - delete (1010A) - delete 2 days after at 2.2am
+#
+# Create (1003A) mapping template to reindex above(1001A) rollup data, Run once only
+#   - create once use forever run, at system start
+#
+# Create reindex job for index created in 1001, create the job daily
+#   - reindex yesterdays data, run at 2.3am
+#
+# Create rollup for index created in 1004, create job once, summarise one day old data
+#   - create (1005A) once,  at 3.1am
+#   - start (1006A) once at 3.2am,
+#   - this shuould run once only but reindexed indexed must be created already, so run 24 hours delayed,
+#   - If not will see an error as can't create the rollup index for not existing data
+#--------SAMPLE--------
+#- id: x1
+#  uri: _reindex?wait_for_completion=false
+#  method: post
+#  filepath: config/templates/reindex.txt
+#  cron: "*/15 * * * * ?"
+#  deltadays: 2
+#  enabled: true
+###
+#- id: x2
+#  uri: _cluster/health?filter_path=status
+#  method: get
+#  enabled: true
+#  name: Elastic Health
+#  cron: "1/5 * * * * ?"
+
+
+
+
+
+
+
+
+
+
+
+
+#-------------------1000-------------------------------------------------------------------------------------------
+
+#- id: 1001A-1
+#  name: Create Index transactions-d
+#  uri: /transactions-d-{yyyy}.{mm}.{dd}
+#  method: put
+#  cron: "0 1 2 1/1 * ?"
+#
+##This task will run at app startup and also as scheduled
+#- id: 1001A
+#  name: Create Daily rollup job, result axp-tps-bystage
+#  uri: _rollup/job/axp-tps-rollup-{yyyy}.{mm}.{dd}
+#  method: put
+#  filepath: config/templates/1001.txt
+#  cron: "0 2 2 1/1 * ?"
+#  runonceafterinmins: 1
+#
+#- id: 1002A
+#  name: Start Daily rollup job in 1001
+#  uri: _rollup/job/axp-tps-rollup-{yyyy}.{mm}.{dd}/_start
+#  method: post
+#  cron: "0 3 2 1/1 * ?"
+#  runonceafterinmins: 2
+#
+#- id: 1003A
+#  name: Add Once index mapping template for axp-tps-bystage-ri indices
+#  uri: _template/axp-tps-bystage-ri
+#  method: put
+#  filepath: config/templates/1003.txt
+#
+#- id: 1004A
+#  name: Create Daily reindex job for index created in 1001, result axp-tps-bystage-ri-*
+#  uri: _reindex?slices=5&refresh&wait_for_completion=false
+#  method: post
+#  filepath: config/templates/1004.txt
+#  cron: "0 1 3 1/1 * ?"
+#  deltadays: 1
+#
+#- id: 1005A
+#  name: Create Once rollup for index created in 1004
+#  uri: _rollup/job/axp-day-tps-bystage
+#  method: put
+#  filepath: config/templates/1005.txt
+#  runonceafterinmins: 2000
+#
+#
+#- id: 1006A
+#  name: Start Once rollup job created in 1005
+#  uri: _rollup/job/axp-day-tps-bystage/_start
+#  method: post
+#  runonceafterinmins: 2001
+#
+#
+#- id: 1009A
+#  name: Stop Daily rollup job in 1001 after two days
+#  uri: _rollup/job/axp-tps-rollup-{yyyy}.{mm}.{dd}/_stop
+#  method: post
+#  cron: "0 4 2 1/1 * ?"
+#  deltadays: 2
+#
+#- id: 1010A
+#  name: Delete Daily rollup job in 1001 after two days
+#  uri: _rollup/job/axp-tps-rollup-{yyyy}.{mm}.{dd}
+#  method: delete
+#  cron: "0 5 2 1/1 * ?"
+#  deltadays: 3
+#--------------------cleanup--------------------------
+- id: 1011
+  name: Delete axp-tps-bystage index after two days
+  uri: axp-tps-bystage-2021.08.29
+  method: delete
+  cron: "1/5 * * * * ?"
+  deltadays: 3
+
+
+
+
+##--------1050----------weekly backup-------------------------------------------------------------------------
+#- id: 1050
+#  name: Take a weekly backup
+#  uri: _snapshot/orange_gcs_repository/snapshot_tra_{yyyy}.{mm}.{dd}
+#  method: put
+#  cron: "0 0 10 ? * SUN"
+#  filepath: config/templates/1050.txt
+#
+#
+#
+####-------------1100----------------------------------------------------------------------------------------------
+#- id: 1100
+#  name: Add Once, index mapping template for axp-transactions-ri
+#  uri: _template/axp-transactions-ri
+#  method: put
+#  filepath: config/templates/1101.txt
+
+
+#- id: 1101
+#  name: Create Daily reindex with less fields to axp-transactions-ri-*
+#  uri: _reindex?slices=5&refresh&wait_for_completion=false
+#  method: post
+#  filepath: config/templates/1101.txt
+#  cron: "0 5 21 1/1 * ?"
+#  deltadays: 1
+#  indexpartitionval: 3
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

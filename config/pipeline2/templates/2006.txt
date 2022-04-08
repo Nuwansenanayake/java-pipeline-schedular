@@ -1,0 +1,32 @@
+{
+
+    "index_pattern": "axp-tps-bystage-ri*",
+    "rollup_index": "axp-day-tps-bystage",
+    "cron": "0 0 4 1/1 * ?",
+      "page_size": 1000,
+    "groups": {
+      "date_histogram": {
+        "interval": "1h",
+        "field": "timestamp",
+        "delay": "1s",
+        "time_zone": "UTC"
+      },
+      "terms": {
+        "fields": [
+          "stage.terms.value.keyword"
+        ]
+      }
+    },
+    "metrics": [
+      {
+        "field": "@timestamp.value_count.value",
+        "metrics": [
+          "avg",
+          "max",
+          "min",
+          "value_count",
+          "sum"
+        ]
+      }
+    ]
+}

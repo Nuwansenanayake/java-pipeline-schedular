@@ -1,0 +1,10 @@
+{
+  "index_patterns": [
+    "axp-transactions-ri-*"
+  ],
+  "settings": {
+    "index": {
+      "number_of_replicas": 0
+    }
+  }
+}

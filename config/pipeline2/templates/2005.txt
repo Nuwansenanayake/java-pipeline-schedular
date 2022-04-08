@@ -1,0 +1,11 @@
+{
+  "source": {
+    "index": "axp-tps-bystage-{yyyy}.{mm}.{dd}"
+  },
+  "dest": {
+    "index": "axp-tps-bystage-ri-{yyyy}.{mm}.{dd}"
+  },
+    "script": {
+    "source": "ctx._source.timestamp = ctx._source.remove(\"@timestamp.date_histogram.timestamp\")"
+  }
+}

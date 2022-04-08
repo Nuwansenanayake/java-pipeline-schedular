@@ -1,0 +1,10 @@
+{
+    "index_patterns": ["axp-tps-bystage-ri*"],
+    "mappings" : {
+      "properties" : {
+        "timestamp" : {
+          "type" : "date"
+        }
+      }
+    }
+  }
